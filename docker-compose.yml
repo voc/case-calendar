@@ -1,0 +1,7 @@
+version: '2'
+services:
+  c3voc_calendar:
+    build: .
+    image: c3voc_calendar:1.0
+    volumes:
+    - .:/code
