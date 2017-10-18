@@ -1,0 +1,32 @@
+---
+# The C3VOC calendar
+
+SHA2017:
+  start: 2017-08-04
+  end: 2017-08-08
+  room cases:
+    - S1
+    - S2
+    - S3
+    - S4
+    - S5
+    - S6
+  audio cases:
+    - A1
+    - A2
+
+34C3:
+  start: 2017-12-27
+  end: 2017-12-30
+  room cases:
+    - S1
+    - S2
+    - S3
+    - S4
+    - S5
+    - S6
+  audio cases:
+    - A1
+    - A2
+
+...

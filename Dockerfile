@@ -11,4 +11,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # app.py does *nothing, but run in a never ending loop
-CMD [ "python", "./c3voc_calendar.py" ]
+CMD [ "python", "c3voc_calendar.py", "calendar.yaml", "calendar.svg"]
