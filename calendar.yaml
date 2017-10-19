@@ -15,6 +15,57 @@ SHA2017:
     - A1
     - A2
 
+Datenspuren 2017:
+  start: 2017-10-21
+  end: 2017-10-22
+  room cases:
+    - S5
+    - S6
+
+All Systems Go!:
+  start: 2017-10-21
+  end: 2017-10-22
+
+privacyweek.at 2017:
+  start: 2017-10-23
+  end: 2017-10-29
+  room cases:
+    - S4
+
+SUBSCRIBE 9:
+  start: 2017-10-26
+  end: 2017-10-29
+  room cases:
+    - S6
+    - M
+
+NixCon 2017:
+  start: 2017-10-27
+  end: 2017-10-28
+  room cases:
+    - S5
+
+WikidataCon 2017:
+  start: 2017-10-28
+  end: 2017-10-29
+  room cases:
+    - S1
+    - S2
+    - S3
+  audio cases:
+    - A1
+    - A2
+
+Sonoj Convention 2017:
+  start: 2017-11-04
+  end: 2017-11-05
+  room cases:
+    - C4
+
+T4AT (//SEIBERT/MEDIA):
+  start: 2017-11-30
+  end: 2017-12-01
+
 34C3:
   start: 2017-12-27
   end: 2017-12-30
