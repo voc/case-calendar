@@ -36,24 +36,28 @@ class C3VOCCalendar:
 
         This makes sure we only have 1 Gantt resource for all the occurences of a resource over all the events
         """
-        for room_case in event_details['room cases']:
-            self.create_unique_gantt_resource(room_case)
+        if 'room cases' in event_details:
+            for room_case in event_details['room cases']:
+                self.create_unique_gantt_resource(room_case)
 
-        for audio_case in event_details['audio cases']:
-            self.create_unique_gantt_resource(audio_case)
+        if 'audio cases' in event_details:
+            for audio_case in event_details['audio cases']:
+                self.create_unique_gantt_resource(audio_case)
 
     def retrieve_resources_for_event(self, event_details):
         """Read the resources from the evernt details and return a list of the Gantt resources for the event"""
 
         necessary_resources = []
 
-        for room_case in event_details['room cases']:
-            resource = self.resources[room_case]
-            necessary_resources.append(resource)
+        if 'room cases' in event_details:
+            for room_case in event_details['room cases']:
+                resource = self.resources[room_case]
+                necessary_resources.append(resource)
 
-        for audio_case in event_details['audio cases']:
-            resource = self.resources[audio_case]
-            necessary_resources.append(resource)
+        if 'audio cases' in event_details:
+            for audio_case in event_details['audio cases']:
+                resource = self.resources[audio_case]
+                necessary_resources.append(resource)
 
         return necessary_resources
 
