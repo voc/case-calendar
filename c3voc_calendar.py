@@ -6,7 +6,36 @@ import datetime
 import yaml
 import gantt
 
+class ColourWheel:
+    """Class that will return an endless aount of colors from a color wheel based on C3VOC green (#28C3AB)
+
+    Source: http://paletton.com/#uid=c3d0p3G0S0kprGteZQMkBLdvfCm-Rrp
+    """
+
+    colours = ['#28C3AB', '#28C3A9', '#386FC8', '#FFB534', '#FF8634', '#78E1D0', '#83A8E3', '#FFD488', '#FFB888',
+               '#4AD1BA', '#5888D4', '#FFC35B', '#FF9D5B', '#04B799', '#1556BC', '#FFA506', '#FF6B06', '#008A73',
+               '#DA8B00', '#DA5800']
+
+    def __init__(self):
+        self.list_iterator = iter(self.colours)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            colour = next(self.list_iterator)
+
+            return colour
+        except:
+            self.list_iterator = iter(self.colours)
+            colour = next(self.list_iterator)
+
+            return colour
+
+
 class C3VOCCalendar:
+    """A class representing the C3VOC calendar. It parses various data sources and then exports them as a GANTT chart in SVG form"""
     resources = {}
 
     def load_yaml_file(self, yaml_file_name):
@@ -62,7 +91,7 @@ class C3VOCCalendar:
         return necessary_resources
 
 
-    def create_event_as_gantt_task(self, event_name, event_details):
+    def create_event_as_gantt_task(self, event_name, event_details, colour):
         """Create a Gantt task  for the event and assign the resources"""
 
         # parse the start time into a datetime and find the length of the event in days
@@ -79,7 +108,8 @@ class C3VOCCalendar:
         task = gantt.Task(name = event_name,
                           start = start_date,
                           duration = days,
-                          resources = resources)
+                          resources = resources,
+                          color = colour)
 
         return task
 
@@ -89,12 +119,14 @@ class C3VOCCalendar:
         the audio cases and room cases are resources
         """
 
+        colours = ColourWheel()
+
         for event_name, event_details in self.calendar.items():
             # First gather the resources
             self.create_resourses_from_event(event_details)
 
             # Create the task and assign the resources
-            event = self.create_event_as_gantt_task(event_name = event_name, event_details = event_details)
+            event = self.create_event_as_gantt_task(event_name = event_name, event_details = event_details, colour = next(colours))
 
             # Add the task to the project
             self.gantt_project.add_task(event)
