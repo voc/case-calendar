@@ -2,6 +2,8 @@
 
 import argparse
 import datetime
+import urllib.request
+import json
 
 import yaml
 import gantt
@@ -37,6 +39,7 @@ class ColourWheel:
 class C3VOCCalendar:
     """A class representing the C3VOC calendar. It parses various data sources and then exports them as a GANTT chart in SVG form"""
     resources = {}
+    calendar = {}
 
     def load_yaml_file(self, yaml_file_name):
         """Loads the requested YAML file and tries to parse it into a datastructure"""
@@ -51,6 +54,52 @@ class C3VOCCalendar:
             print(open_error)
 
         return False
+
+    def load_json_url(self, json_url):
+        """Downloads a json file from the supplied URL and reads into the format as defined by the YAML file loader"""
+        try:
+            with urllib.request.urlopen(json_url) as url:
+                events = json.loads(url.read().decode())
+                print(events)
+
+                for source_name, source_event in events["voc_events"].items():
+
+                    event_date = datetime.datetime.strptime(source_event["start_date"], "%Y-%m-%d").date()
+                    today = datetime.date.today()
+                    first_of_the_year = today.replace(month=1)
+                    first_of_the_year = first_of_the_year.replace(day=1)
+
+                    if event_date >= first_of_the_year:
+                        event = dict()
+                        event["start"] = event_date
+                        event["end"] = datetime.datetime.strptime(source_event["end_date"], "%Y-%m-%d").date()
+
+                        room_cases = []
+                        audio_cases = []
+
+                        for case in source_event["cases"]:
+                            if case in ["1", "2", "3", "4", "5", "6", "7", "8"]:
+                                room_cases.append("S" + case)
+                            elif case[0] == "A":
+                                audio_cases.append(case.upper())
+                            else:
+                                room_cases.append(case.upper())
+
+                        event["room cases"] = room_cases
+                        event["audio cases"] = audio_cases
+
+                        self.calendar[source_name] = event
+
+                if len(self.calendar) > 0:
+                    print("Calendar = %s" % str(self.calendar))
+                    return True
+
+        except Exception as e:
+            import traceback
+            print("""Received an exception: %s\nTraceback: %s""" % (str(e), traceback.format_exc()))
+
+        return False
+
 
     def is_resource_known(self, resource_name):
         return resource_name in self.resources
@@ -150,22 +199,37 @@ class C3VOCCalendar:
 
     def main(self, arguments):
         """The main application function, this is where it all starts properly"""
-        if self.load_yaml_file(arguments.calendar_yaml_file):
+        generate_output = False
+
+        if arguments.calendar_yaml_file:
+            if self.load_yaml_file(arguments.calendar_yaml_file.strip()):
+                generate_output = True
+            else:
+                print("""Failure while trying to load the YAML file, please check error message, fix the problem and try again""")
+
+        elif arguments.calendar_json_url:
+            if self.load_json_url(arguments.calendar_json_url.strip()):
+                generate_output = True
+            else:
+                print("""Loading the JSON file from %s failed. Please check the supplied URL""" % (arguments.calendar_json_url))
+        else:
+            print("""The supplied combination of parameters is not sufficient to do something. Please review""")
+
+        if generate_output:
             self.gantt_project = gantt.Project(name='C3VOC')
 
             self.create_calendar()
+            self.export_calendar(arguments.calendar_svg_file.strip())
 
-            self.export_calendar(arguments.calendar_svg_file)
-
-        else:
-            print("""Failure while trying to load the YAML file, please check error message, fix the problem and try again""")
+            return True
 
         return False
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("calendar_yaml_file", help="YAML file to use as source for the calendar")
-    parser.add_argument("calendar_svg_file", help="SVG file to use as output for the calendar")
+    parser.add_argument("-f", help="YAML file to use as source for the calendar", dest="calendar_yaml_file", action="store")
+    parser.add_argument("-o", help="SVG file to use as output for the calendar", dest="calendar_svg_file", action="store")
+    parser.add_argument("-u", help="URL to download JSON from", dest="calendar_json_url", action="store")
     args = parser.parse_args()
 
     calendar = C3VOCCalendar()
