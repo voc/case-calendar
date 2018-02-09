@@ -55,7 +55,18 @@ class C3VOCCalendar:
 
         return False
 
-    def load_json_url(self, json_url):
+
+    def is_event_were_interested_in(self, event_start_date, calendar_year):
+        if calendar_year:
+            return event_start_date.year == int(calendar_year)
+        else:
+            today = datetime.date.today()
+            first_of_the_year = today.replace(month=1)
+            first_of_the_year = first_of_the_year.replace(day=1)
+
+            return event_start_date >= first_of_the_year
+
+    def load_json_url(self, json_url, calendar_year):
         """Downloads a json file from the supplied URL and reads into the format as defined by the YAML file loader"""
         try:
             with urllib.request.urlopen(json_url) as url:
@@ -65,11 +76,8 @@ class C3VOCCalendar:
                 for source_name, source_event in events["voc_events"].items():
 
                     event_date = datetime.datetime.strptime(source_event["start_date"], "%Y-%m-%d").date()
-                    today = datetime.date.today()
-                    first_of_the_year = today.replace(month=1)
-                    first_of_the_year = first_of_the_year.replace(day=1)
 
-                    if event_date >= first_of_the_year:
+                    if self.is_event_were_interested_in(event_date, calendar_year):
                         event = dict()
                         event["start"] = event_date
                         event["end"] = datetime.datetime.strptime(source_event["end_date"], "%Y-%m-%d").date()
@@ -77,6 +85,20 @@ class C3VOCCalendar:
                         room_cases = []
                         audio_cases = []
 
+                        temp_cases = []
+
+                        #for case in source_event["cases"]:
+                        #    if "/" in case:
+                        #        temp = case.split('/')
+                        #        for thing in temp:
+                        #            temp_cases.append(thing)
+
+                        #    if "+" in case:
+                        #        temp = case.split('+')
+                        #        for thing in temp:
+                        #            temp_cases.append(thing)
+
+                        #for case in temp_cases:
                         for case in source_event["cases"]:
                             if case in ["1", "2", "3", "4", "5", "6", "7", "8"]:
                                 room_cases.append("S" + case)
@@ -91,7 +113,7 @@ class C3VOCCalendar:
                         self.calendar[source_name] = event
 
                 if len(self.calendar) > 0:
-                    print("Calendar = %s" % str(self.calendar))
+                    #print("Calendar = %s" % str(self.calendar))
                     return True
 
         except Exception as e:
@@ -180,7 +202,7 @@ class C3VOCCalendar:
             # Add the task to the project
             self.gantt_project.add_task(event)
 
-    def export_calendar(self, svg_name):
+    def export_calendar(self, svg_name, year):
         """Create an SVG from Gantt project for the current year"""
         today = datetime.date.today()
         start_date = today
@@ -190,6 +212,10 @@ class C3VOCCalendar:
         end_date = today
         end_date = end_date.replace(month = 12)
         end_date = end_date.replace(day = 31)
+
+        if year:
+            start_date = start_date.replace(year = int(year))
+            end_date = end_date.replace(year=int(year))
 
         self.gantt_project.make_svg_for_resources(filename = svg_name,
                                                   today = today,
@@ -201,14 +227,17 @@ class C3VOCCalendar:
         """The main application function, this is where it all starts properly"""
         generate_output = False
 
+        calendar_year = None
+        if arguments.calendar_year:
+            calendar_year = arguments.calendar_year.strip()
+
         if arguments.calendar_yaml_file:
             if self.load_yaml_file(arguments.calendar_yaml_file.strip()):
                 generate_output = True
             else:
                 print("""Failure while trying to load the YAML file, please check error message, fix the problem and try again""")
-
         elif arguments.calendar_json_url:
-            if self.load_json_url(arguments.calendar_json_url.strip()):
+            if self.load_json_url(arguments.calendar_json_url.strip(), calendar_year):
                 generate_output = True
             else:
                 print("""Loading the JSON file from %s failed. Please check the supplied URL""" % (arguments.calendar_json_url))
@@ -219,7 +248,7 @@ class C3VOCCalendar:
             self.gantt_project = gantt.Project(name='C3VOC')
 
             self.create_calendar()
-            self.export_calendar(arguments.calendar_svg_file.strip())
+            self.export_calendar(arguments.calendar_svg_file.strip(), calendar_year)
 
             return True
 
@@ -230,6 +259,7 @@ if __name__ == '__main__':
     parser.add_argument("-f", help="YAML file to use as source for the calendar", dest="calendar_yaml_file", action="store")
     parser.add_argument("-o", help="SVG file to use as output for the calendar", dest="calendar_svg_file", action="store")
     parser.add_argument("-u", help="URL to download JSON from", dest="calendar_json_url", action="store")
+    parser.add_argument("-y", help="Year to create chart for, current year if not supplied", dest="calendar_year", action="store")
     args = parser.parse_args()
 
     calendar = C3VOCCalendar()
