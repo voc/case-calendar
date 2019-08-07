@@ -8,6 +8,8 @@ import json
 import yaml
 import gantt
 
+from dateutil.relativedelta import relativedelta
+
 class ColourWheel:
     """Class that will return an endless aount of colors from a color wheel based on C3VOC green (#28C3AB)
 
@@ -40,6 +42,9 @@ class C3VOCCalendar:
     """A class representing the C3VOC calendar. It parses various data sources and then exports them as a GANTT chart in SVG form"""
     resources = {}
     calendar = {}
+
+    def __init__(self):
+        self.create_unique_gantt_resource('Unassigned')
 
     def load_yaml_file(self, yaml_file_name):
         """Loads the requested YAML file and tries to parse it into a datastructure"""
@@ -138,11 +143,13 @@ class C3VOCCalendar:
         """
         if 'room cases' in event_details:
             for room_case in event_details['room cases']:
-                self.create_unique_gantt_resource(room_case)
+                if room_case != '@@CASE@@':
+                    self.create_unique_gantt_resource(room_case)
 
         if 'audio cases' in event_details:
             for audio_case in event_details['audio cases']:
-                self.create_unique_gantt_resource(audio_case)
+                if audio_case != '@@CASE@@':
+                    self.create_unique_gantt_resource(audio_case)
 
     def retrieve_resources_for_event(self, event_details):
         """Read the resources from the evernt details and return a list of the Gantt resources for the event"""
@@ -151,13 +158,19 @@ class C3VOCCalendar:
 
         if 'room cases' in event_details:
             for room_case in event_details['room cases']:
-                resource = self.resources[room_case]
-                necessary_resources.append(resource)
+                if room_case != '@@CASE@@':
+                    resource = self.resources[room_case]
+                    necessary_resources.append(resource)
 
         if 'audio cases' in event_details:
             for audio_case in event_details['audio cases']:
-                resource = self.resources[audio_case]
-                necessary_resources.append(resource)
+                if audio_case != '@@CASE@@':
+                    resource = self.resources[audio_case]
+                    necessary_resources.append(resource)
+
+        if len(necessary_resources) == 0:
+            resource = self.resources['Unassigned']
+            necessary_resources.append(resource)
 
         return necessary_resources
 
@@ -202,7 +215,7 @@ class C3VOCCalendar:
             # Add the task to the project
             self.gantt_project.add_task(event)
 
-    def export_calendar(self, svg_name, year):
+    def export_calendar_year(self, svg_name, year):
         """Create an SVG from Gantt project for the current year"""
         today = datetime.date.today()
         start_date = today
@@ -221,6 +234,34 @@ class C3VOCCalendar:
                                                   today = today,
                                                   start = start_date,
                                                   end = end_date)
+
+    def export_calendar_monthly(self, year, svg_prefix, svg_suffix):
+        """Create an SVG from Gantt project for the current year"""
+
+        # Yes, 13, this is where the range stops
+        for month in range(1,13):
+
+            # Base the start and end dates on today
+            today = datetime.date.today()
+
+            if year:
+                today = today.replace(year = int(year))
+
+            today = today.replace(day=1)
+            today = today.replace(month=month)
+
+            end_date = today + relativedelta(day=1, months=+1, days=-1)
+            start_date = today + relativedelta(day=1)
+
+            # But the Gantt chart needs today as well, so recreate it...
+            today = datetime.date.today()
+
+            svg_name = "%s%02d%s" % (svg_prefix, month, svg_suffix)
+
+            self.gantt_project.make_svg_for_resources(filename = svg_name,
+                                                      today = today,
+                                                      start = start_date,
+                                                      end = end_date)
 
 
     def main(self, arguments):
@@ -248,7 +289,11 @@ class C3VOCCalendar:
             self.gantt_project = gantt.Project(name='C3VOC')
 
             self.create_calendar()
-            self.export_calendar(arguments.calendar_svg_file.strip(), calendar_year)
+
+            if arguments.calendar_monthly:
+                self.export_calendar_monthly(calendar_year, arguments.calendar_monthly_prefix, arguments.calendar_monthly_suffix)
+            else:
+                self.export_calendar_year(arguments.calendar_svg_file.strip(), calendar_year)
 
             return True
 
@@ -260,6 +305,11 @@ if __name__ == '__main__':
     parser.add_argument("-o", help="SVG file to use as output for the calendar", dest="calendar_svg_file", action="store")
     parser.add_argument("-u", help="URL to download JSON from", dest="calendar_json_url", action="store")
     parser.add_argument("-y", help="Year to create chart for, current year if not supplied", dest="calendar_year", action="store")
+    parser.add_argument("-m", help="Create monthly files", dest="calendar_monthly", action="store_true")
+    parser.add_argument("-p", help="Monthly file prefix", dest="calendar_monthly_prefix", action="store")
+    parser.add_argument("-s", help="Monthly file suffix", dest="calendar_monthly_suffix", action="store")
+
+
     args = parser.parse_args()
 
     calendar = C3VOCCalendar()
