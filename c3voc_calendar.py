@@ -107,6 +107,7 @@ class C3VOCCalendar:
                         for case in source_event["cases"]:
                             if case in ["1", "2", "3", "4", "5", "6", "7", "8"]:
                                 room_cases.append("S" + case)
+                                audio_cases.append("A" + case)
                             elif case[0] == "A":
                                 audio_cases.append(case.upper())
                             else:
