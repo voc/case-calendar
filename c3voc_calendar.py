@@ -105,13 +105,27 @@ class C3VOCCalendar:
 
                         #for case in temp_cases:
                         for case in source_event["cases"]:
+                            print("Found cases %s for event %s" % (case, source_name))
                             if case in ["1", "2", "3", "4", "5", "6", "7", "8"]:
                                 room_cases.append("S" + case)
                                 audio_cases.append("A" + case)
                             elif case[0] == "A":
                                 audio_cases.append(case.upper())
+                            elif case[0] == "S":
+                                room_cases.append(case.upper())
+                            elif len(case.strip()) == 3:
+                                if case[1] == "-":
+                                    print("%s is decoded into %d to %d" % (case, int(case[0]), int(case[2])))
+                                    for caselet in range(int(case[0]), int(case[2])):
+                                        print("Adding case %d" % (caselet))
+                                        room_cases.append("S" + str(caselet))
+                                        audio_cases.append("A" + str(caselet))
+                            elif case.upper() in ["NEIN", "?", "X", "XX", "-"]:
+                                # These values are considered as non-assigned cases
+                                continue
                             else:
                                 room_cases.append(case.upper())
+
 
                         event["room cases"] = room_cases
                         event["audio cases"] = audio_cases
