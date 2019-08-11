@@ -105,7 +105,10 @@ class C3VOCCalendar:
 
                         #for case in temp_cases:
                         for case in source_event["cases"]:
-                            print("Found cases %s for event %s" % (case, source_name))
+                            case = case.replace('?', '')
+                            if case == '@@CASE@@' or case == '':
+                                continue
+                            
                             if case in ["1", "2", "3", "4", "5", "6", "7", "8"]:
                                 room_cases.append("S" + case)
                                 audio_cases.append("A" + case)
@@ -158,13 +161,11 @@ class C3VOCCalendar:
         """
         if 'room cases' in event_details:
             for room_case in event_details['room cases']:
-                if room_case != '@@CASE@@':
-                    self.create_unique_gantt_resource(room_case)
+                self.create_unique_gantt_resource(room_case)
 
         if 'audio cases' in event_details:
             for audio_case in event_details['audio cases']:
-                if audio_case != '@@CASE@@':
-                    self.create_unique_gantt_resource(audio_case)
+                self.create_unique_gantt_resource(audio_case)
 
     def retrieve_resources_for_event(self, event_details):
         """Read the resources from the evernt details and return a list of the Gantt resources for the event"""
@@ -173,15 +174,13 @@ class C3VOCCalendar:
 
         if 'room cases' in event_details:
             for room_case in event_details['room cases']:
-                if room_case != '@@CASE@@':
-                    resource = self.resources[room_case]
-                    necessary_resources.append(resource)
+                resource = self.resources[room_case]
+                necessary_resources.append(resource)
 
         if 'audio cases' in event_details:
             for audio_case in event_details['audio cases']:
-                if audio_case != '@@CASE@@':
-                    resource = self.resources[audio_case]
-                    necessary_resources.append(resource)
+                resource = self.resources[audio_case]
+                necessary_resources.append(resource)
 
         if len(necessary_resources) == 0:
             resource = self.resources['Unassigned']
