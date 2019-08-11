@@ -260,10 +260,18 @@ class C3VOCCalendar:
             start_date = start_date.replace(year = int(year))
             end_date = end_date.replace(year=int(year))
 
-        self.gantt_project.make_svg_for_resources(filename = svg_name,
-                                                  today = today,
-                                                  start = start_date,
-                                                  end = end_date)
+        self.gantt_project.make_svg_for_resources(
+            filename = svg_name,
+            today = today,
+            start = start_date,
+            end = end_date,
+            one_line_for_tasks = True,
+        )
+        self.gantt_project.make_svg_for_tasks(
+            filename = svg_name+'-tasks',
+            today = today,
+            start = start_date, end = end_date,
+        )
 
     def export_calendar_monthly(self, year, svg_prefix, svg_suffix):
         """Create an SVG from Gantt project for the current year"""
@@ -287,11 +295,19 @@ class C3VOCCalendar:
             today = datetime.date.today()
 
             svg_name = "%s%02d%s" % (svg_prefix, month, svg_suffix)
+            svg2_name = "%stasks_%02d%s" % (svg_prefix, month, svg_suffix)
 
-            self.gantt_project.make_svg_for_resources(filename = svg_name,
-                                                      today = today,
-                                                      start = start_date,
-                                                      end = end_date)
+            self.gantt_project.make_svg_for_resources(
+                filename = svg_name,
+                today = today,
+                start = start_date, end = end_date,
+                one_line_for_tasks = True,
+            )
+            self.gantt_project.make_svg_for_tasks(
+                filename = svg2_name,
+                today = today,
+                start = start_date, end = end_date,
+            )
 
 
     def main(self, arguments):
