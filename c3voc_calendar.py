@@ -113,19 +113,11 @@ class C3VOCCalendar:
                                 continue
                             
                             if case in ["1", "2", "3", "4", "5", "6", "7", "8"]:
-                                room_cases.append("S" + case)
-                                audio_cases.append("A" + case)
+                                room_cases.append(case)
                             elif case[0] == "A":
                                 audio_cases.append(case.upper())
                             elif case[0] == "S":
                                 room_cases.append(case.upper())
-                            elif len(case.strip()) == 3:
-                                if case[1] == "-":
-                                    print("%s is decoded into %d to %d" % (case, int(case[0]), int(case[2])))
-                                    for caselet in range(int(case[0]), int(case[2])):
-                                        print("Adding case %d" % (caselet))
-                                        room_cases.append("S" + str(caselet))
-                                        audio_cases.append("A" + str(caselet))
                             elif case.upper() in ["NEIN", "?", "X", "XX", "-"]:
                                 # These values are considered as non-assigned cases
                                 continue
