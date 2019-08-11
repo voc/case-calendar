@@ -7,8 +7,11 @@ import json
 
 import yaml
 import gantt
+import re
 
 from dateutil.relativedelta import relativedelta
+from collections import OrderedDict
+
 
 class ColourWheel:
     """Class that will return an endless aount of colors from a color wheel based on C3VOC green (#28C3AB)
@@ -210,14 +213,29 @@ class C3VOCCalendar:
         return task
 
 
-    def create_calendar(self):
+    def create_calendar(self, sort_by_date = False):
         """Iterate over the parsed YAML calendar file and add the "resources" to the project. An event is a task and
         the audio cases and room cases are resources
         """
 
         colours = ColourWheel()
 
-        for event_name, event_details in self.calendar.items():
+
+        # from https://blog.codinghorror.com/sorting-for-humans-natural-sort-order/
+        convert = lambda text: int(text) if text.isdigit() else text
+        def sort_case(x):
+            first_case = x[1]['room cases'][0] if len(x[1]['room cases']) > 0 else ''
+            result = [ convert(c) for c in re.split('([0-9]+)', first_case) ]
+            #print('sort key', x[0], result)
+            return result
+        def sort_date_case(x):
+            first_case = x[1]['room cases'][0] if len(x[1]['room cases']) > 0 else ''
+            return [ str(x[1]['start']), first_case ]
+
+        sorted_calendar = OrderedDict(sorted(self.calendar.items(), key=(sort_date_case if sort_by_date else sort_case)))
+
+        for event_name, event_details in sorted_calendar.items():
+            print(event_name, event_details)
             # First gather the resources
             self.create_resourses_from_event(event_details)
 
@@ -301,7 +319,7 @@ class C3VOCCalendar:
             gantt.define_not_worked_days([])
             self.gantt_project = gantt.Project(name='C3VOC')
 
-            self.create_calendar()
+            self.create_calendar(not(arguments.calendar_monthly))
 
             if arguments.calendar_monthly:
                 self.export_calendar_monthly(calendar_year, arguments.calendar_monthly_prefix, arguments.calendar_monthly_suffix)
