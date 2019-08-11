@@ -197,15 +197,13 @@ class C3VOCCalendar:
         end_date = event_details['end']
         duration = end_date - start_date
 
-        days = duration.days
-
         # Retrieve a list of the resources assigned to this event
         resources = self.retrieve_resources_for_event(event_details)
 
         # Create the task
         task = gantt.Task(name = event_name,
                           start = start_date,
-                          duration = days,
+                          duration = duration.days + 1,
                           resources = resources,
                           color = colour)
 
