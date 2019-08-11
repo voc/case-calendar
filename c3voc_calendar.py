@@ -298,6 +298,7 @@ class C3VOCCalendar:
             print("""The supplied combination of parameters is not sufficient to do something. Please review""")
 
         if generate_output:
+            gantt.define_not_worked_days([])
             self.gantt_project = gantt.Project(name='C3VOC')
 
             self.create_calendar()
