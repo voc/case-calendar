@@ -79,7 +79,7 @@ class C3VOCCalendar:
         try:
             with urllib.request.urlopen(json_url) as url:
                 events = json.loads(url.read().decode())
-                print(events)
+                #print(events)
 
                 for source_name, source_event in events["voc_events"].items():
 
@@ -93,14 +93,14 @@ class C3VOCCalendar:
                         room_cases = []
                         audio_cases = []
 
-                        temp_cases = []
-
+                        #temp_cases = []
+                        #
                         #for case in source_event["cases"]:
                         #    if "/" in case:
                         #        temp = case.split('/')
                         #        for thing in temp:
                         #            temp_cases.append(thing)
-
+                        #
                         #    if "+" in case:
                         #        temp = case.split('+')
                         #        for thing in temp:
@@ -132,6 +132,8 @@ class C3VOCCalendar:
 
                 if len(self.calendar) > 0:
                     #print("Calendar = %s" % str(self.calendar))
+
+                    print("Calendar = %s" % json.dumps(self.calendar, indent=2, cls=JSONEncoder))
                     return True
 
         except Exception as e:
@@ -148,6 +150,7 @@ class C3VOCCalendar:
         if not self.is_resource_known(resource_name):
             resource = gantt.Resource(resource_name)
             self.resources[resource_name] = resource
+            print('created resource', resource_name)
 
     def create_resourses_from_event(self, event_details):
         """Create a unique Gantt resource for all resources in the event.
@@ -337,6 +340,14 @@ class C3VOCCalendar:
             return True
 
         return False
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, datetime.date): 
+            return obj.__str__()
+        #if isinstance(obj, method-wrapper): 
+        #    return obj.__str__
+        return json.JSONEncoder.default(self, obj)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
