@@ -256,14 +256,14 @@ class C3VOCCalendar:
             end_date = end_date.replace(year=int(year))
 
         self.gantt_project.make_svg_for_resources(
-            filename = svg_name,
+            filename = 'resources-'+svg_name,
             today = today,
             start = start_date,
             end = end_date,
             one_line_for_tasks = True,
         )
         self.gantt_project.make_svg_for_tasks(
-            filename = svg_name+'-tasks',
+            filename = svg_name,
             today = today,
             start = start_date, end = end_date,
         )
@@ -289,17 +289,17 @@ class C3VOCCalendar:
             # But the Gantt chart needs today as well, so recreate it...
             today = datetime.date.today()
 
-            svg_name = "%s%02d%s" % (svg_prefix, month, svg_suffix)
-            svg2_name = "%stasks_%02d%s" % (svg_prefix, month, svg_suffix)
+            cases_svg_name = "resources-%s%02d%s" % (svg_prefix, month, svg_suffix)
+            event_svg_name = "%s%02d%s" % (svg_prefix, month, svg_suffix)
 
             self.gantt_project.make_svg_for_resources(
-                filename = svg_name,
+                filename = cases_svg_name,
                 today = today,
                 start = start_date, end = end_date,
                 one_line_for_tasks = True,
             )
             self.gantt_project.make_svg_for_tasks(
-                filename = svg2_name,
+                filename = event_svg_name,
                 today = today,
                 start = start_date, end = end_date,
             )
