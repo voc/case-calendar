@@ -271,38 +271,43 @@ class C3VOCCalendar:
     def export_calendar_monthly(self, year, svg_prefix, svg_suffix):
         """Create an SVG from Gantt project for the current year"""
 
-        # Yes, 13, this is where the range stops
-        for month in range(1,13):
+        # Yes, 14, this is where the range stops
+        # we also create the chart for January of next year (month=13)
+        for month in range(1,14):
+            self.export_calendar_month(year, month, svg_prefix, svg_suffix)
+        
 
-            # Base the start and end dates on today
-            today = datetime.date.today()
+    def export_calendar_month(self, year, month, svg_prefix, svg_suffix):
+        """Create an SVG from Gantt project for the selected month of year"""
 
-            if year:
-                today = today.replace(year = int(year))
+        cases_svg_name = "resources-%s%02d%s" % (svg_prefix, month, svg_suffix)
+        event_svg_name = "%s%02d%s" % (svg_prefix, month, svg_suffix)
 
-            today = today.replace(day=1)
-            today = today.replace(month=month)
 
-            end_date = today + relativedelta(day=1, months=+1, days=-1)
-            start_date = today + relativedelta(day=1)
+        today = datetime.date.today()
+        if not(year):
+            year = today.year
 
-            # But the Gantt chart needs today as well, so recreate it...
-            today = datetime.date.today()
+        # allow simple preview to next year
+        if month > 12:
+            month = month % 12
+            year += 1
+ 
+        # Base the start and end dates on today
+        start_date = datetime.date(year, month, 1) + relativedelta(day=1)
+        end_date = start_date + relativedelta(day=1, months=+1, days=-1)
 
-            cases_svg_name = "resources-%s%02d%s" % (svg_prefix, month, svg_suffix)
-            event_svg_name = "%s%02d%s" % (svg_prefix, month, svg_suffix)
-
-            self.gantt_project.make_svg_for_resources(
-                filename = cases_svg_name,
-                today = today,
-                start = start_date, end = end_date,
-                one_line_for_tasks = True,
-            )
-            self.gantt_project.make_svg_for_tasks(
-                filename = event_svg_name,
-                today = today,
-                start = start_date, end = end_date,
-            )
+        self.gantt_project.make_svg_for_resources(
+            filename = cases_svg_name,
+            today = today,
+            start = start_date, end = end_date,
+            one_line_for_tasks = True,
+        )
+        self.gantt_project.make_svg_for_tasks(
+            filename = event_svg_name,
+            today = today,
+            start = start_date, end = end_date,
+        )
 
 
     def main(self, arguments):
