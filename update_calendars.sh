@@ -5,7 +5,7 @@ python3 c3voc_calendar.py -u https://c3voc.de/eventkalender/events.json -m -p ca
 this_month=$(date +%m)
 # yes, this will break in december... but also the whole concepts breaks there, as the next year does not get rendered...
 # update: script can now render month 13 aka January of next year
-next_month=$(($(date +%m) +1))
+next_month=$(printf "%02d" $(($(date +%m) +1)))
 
 ln -s calendar_$this_month.svg calendar_current.svg
 ln -s calendar_$next_month.svg calendar_next.svg
